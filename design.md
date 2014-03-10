@@ -1,7 +1,7 @@
 # Secret of Rogues
 Secret of Rogues is an action RPG with auto-generated content meant to be highly replayable.
 
-I'm pretty much assuming that this game is set in the world of Mana, and so I will refer explicitly to elements of that world throughout this document, but I may decide to completely retheme the game to something else, in which case of course I will need to rename "Gaia's Navel", "Watts", "Cannon Travel Center" etc.
+I'm pretty much assuming that this game is set in the world of Mana, and so I will refer explicitly to elements of that world throughout this document, but at some point I will completely retheme the game to something else, in which case of course I will need to rename "Gaia's Navel", "Watts", etc.
 
 #Multicharacter
 Secret of Rogues will be a multi-character game, where you have a team of up to (2/3/4?) characters. These characters are playable by multiple human players at once, and if not controlled by a player, characters will revert to AI behavior.
@@ -63,7 +63,7 @@ There will be certain kinds of locations that are stamped out in random places. 
 
 ### General location types
 
-**Cannon Travel Centers** will be sprinkled throughout the world. When you find one and decide to travel, the camera zooms out to a map level, and you can click anywhere within a certain radius. You have a N% chance of landing where you clicked, and a Y% chance of landing within M meters. If you click on the location of another cannon travel center, you have a >N% chance of landing there. Next to every cannon is a trampoline, and if you click the trampoline icon when you're targeting your travel you will be able to select a successive travel destination which you will reach by bouncing off of the trampoline.
+**Walrus Travel Centers** will be sprinkled throughout the world. When you find one and decide to travel, the camera zooms out to a map level, and you can click anywhere within a certain radius. You have a N% chance of landing where you clicked, and a Y% chance of landing within M meters. If you click on the location of another walrus travel center, you have a >N% chance of landing there. If you click on another walrus travel center (represented by a noticeable icon) when you're targeting your travel you will be able to select a successive travel destination which you will reach by bouncing off of the walrus.
 
 **Inns** will likewise be sprinkled throughout the world, but less common. You will be able to sleep here to restore your party.
 
@@ -71,5 +71,5 @@ There will be certain kinds of locations that are stamped out in random places. 
 
 **Gaia's Navel**: A huge circular valley in the middle of a forested flatland, with a river running down to a lake at the base. At the lowest point of the valley you will be able to enter a cave system and eventually find Watts, the blacksmith, who can upgrade your equipment for you if you bring him certain rare artifacts.
 
-##Map 
+##Map
 The player will be able to call up a map of everything on the surface that has been explored at will.
