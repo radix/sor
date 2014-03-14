@@ -1,3 +1,7 @@
+(ns sor.perlin)
+
+(defn floor [x] (.floor js/Math x)) ; added by radix
+
 ; PERLIN CODE
 ; github.com/indy/perlin
 
@@ -27,7 +31,6 @@
 ; OTHER DEALINGS IN THE SOFTWARE.
 
 
-(ns perlin.core)
 
 (def p [151 160 137 91 90 15 131 13 201 95 96 53 194 233 7 225
         140 36 103 30 69 142 8 99 37 240 21 10 23 190  6 148
@@ -78,8 +81,6 @@
     (+ (if (= (bit-and h 1) 0) u (- u))
        (if (= (bit-and h 2) 0) v (- v)))))
 
-(defn floor [x] (.floor js/Math x)) ; added by radix
-
 (defn noise
   [x y z]
   (let [X (bit-and (floor x) 255)
@@ -112,17 +113,4 @@
                 (lerp u
                       (grad (p (+ AB 1)) xx (- yy 1) (- zz 1))
                       (grad (p (+ BB 1)) (- xx 1) (- yy 1) (- zz 1)))))))
-
-; END PERLIN CODE
-
-; START SOR CODE
-(ns sor.core
-  (:use [perlin.core :only [noise]]))
-
-(defn noise-grid [height width step]
-  (for [x (range 0 width step)]
-    (for [y (range 0 height step)]
-      (noise x y 0))))
-
-(noise-grid 0.4 0.4 0.1)
 
