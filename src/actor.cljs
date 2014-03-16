@@ -11,32 +11,37 @@ tracer
   [sprite frameset]
   (((framesets sprite) frameset) :frames))
 
-; this is probably *horribly* inefficient, I'm recalculating tons of stuff.
-; optimization: instead of incrementally summing the duration of the frames to determine the current one,
-; rewrite the frame duration datastructure to be based on the number of ms past the start of the loop that the frame should be played.
-; simply put, instead of [2 2 1 2], a framelist should be [2 4 5 7].
-; one problem to figure out with this is how long the final frame should last.
-; warning, this breaks if you have a frame duration of 0.
+; Potential optimization for get-next-frame:
 
-; also, if we end up having consistent frame times for all animations, this can be drastically optimized to little more than a divmod call.
+; Instead of incrementally summing the duration of the frames to determine
+; the current one, rewrite the frame duration datastructure to be based on
+; the number of ms past the start of the loop that the frame should be
+; played. simply put, instead of [2 2 1 2], a framelist should be [2 4 5 7].
+; one problem to figure out with this is how long the final frame
+; should last. warning, this breaks if you have a frame duration of 0.
+
+; also, if we end up having consistent frame times for all animations,
+; this can be drastically optimized to little more than a divmod call.
 ; (hint: let's do that)
 
 (defn get-next-frame
   "Calculate the next frame to draw based on the amount of time that has passed since the start of the animation.
-  frames is a seq of durations.
-  elapsed is the time since the last simulation update.
-  Returns a mapping:
+   frames is a seq of durations.
+
+  - elapsed is the time since the last simulation update.
+  - Returns a mapping:
     :elapsed -> new time since start of animation loop
     :frame -> frame index to draw right now."
   [frames elapsed]
   (let [new-elapsed (mod elapsed (apply + frames))
-        find-frame (fn [frames-elapsed frames i]
-                     (if (< new-elapsed (apply + (vec (take (+ i 1) frames))))
-                       i
-                       (recur (+ frames-elapsed (frames i)) frames (+ i 1))))]
+        find-frame (fn [frames frames-elapsed i]
+                     (if (< new-elapsed frames-elapsed)
+                       (- i 1)
+                       (recur frames (+ frames-elapsed (frames i)) (+ i 1))))]
     {:elapsed new-elapsed
-     :frame (find-frame 0 frames 0)}))
+     :frame (find-frame frames 0 0)}))
 
+;TODO: Support non-looping animations, I think?
 (defn animation-step
   "Return a new actor animation value (suitable for the :animation key in an actor)
   given the previous animation value and the time since the last simulation update."
@@ -79,24 +84,42 @@ tracer
                  {:x 128 :y 128 :height 128 :width 128 :duration 10}]}}})
 
 
+(defn assert=
+  [a b]
+  (if (not= a b)
+    [:bad a]
+    :good))
+
 (get-frames :rabite :breathing-left)
 
-(let [anim (monster :animation)]
-  (get-frames (anim :sprite) (anim :frameset)))
+(assert= (get-next-frame [2 2 2 2] 4)
+         {:elapsed 4 :frame 2})
+(assert= (get-next-frame [1] 10)
+         {:elapsed 0 :frame 0})
+(assert= (get-next-frame [10] 0)
+         {:elapsed 0 :frame 0})
+(assert= (get-next-frame [10] 10)
+         {:elapsed 0 :frame 0})
+(assert= (get-next-frame [10 10] 10)
+         {:elapsed 10 :frame 1})
+(assert= (get-next-frame [10 10 10] 20)
+         {:elapsed 20 :frame 2})
+(assert= (get-next-frame [10 10] 20)
+         {:elapsed 0 :frame 0})
 
-(get-next-frame [2 2 2 2] 4) ;{:elapsed 4 :frame 2}
-(get-next-frame [1] 10) ;{:elapsed 0 :frame 0}
 
-(get-next-frame [10] 0) ; 0
-(get-next-frame [10] 10) ; 0
-(get-next-frame [10 10] 10) ; 1
-(get-next-frame [10 10 10] 20) ; 2
-(get-next-frame [10 10] 20) ; 0
-
-(animation-step (monster :animation) 9)
-(animation-step (monster :animation) 10)
-(animation-step (monster :animation) 19)
-(animation-step (monster :animation) 20)
+(assert= (animation-step (monster :animation) 0)
+         {:sprite :rabite :frameset :breathing-left :frame 0 :elapsed 0})
+(assert= (animation-step (monster :animation) 9)
+         {:sprite :rabite :frameset :breathing-left :frame 0 :elapsed 9})
+(assert= (animation-step (monster :animation) 10)
+         {:sprite :rabite :frameset :breathing-left :frame 1 :elapsed 10})
+(assert= (animation-step (monster :animation) 11)
+         {:sprite :rabite :frameset :breathing-left :frame 1 :elapsed 11})
+(assert= (animation-step (monster :animation) 19)
+         {:sprite :rabite :frameset :breathing-left :frame 1 :elapsed 19})
+(assert= (animation-step (monster :animation) 20)
+         {:sprite :rabite :frameset :breathing-left :frame 0 :elapsed 0})
 
 #_"
 Consider:
@@ -113,6 +136,7 @@ allowed interrupts...
  :invincible
    nothing.
 
+(some design considerations here...)
 alternatively, invert it (are there any interrupts other than 'attack'?... 'balloon'? 'item'?)
 attack -> valid states are :idle, :blocking, but not :dodging or :invincible.
 spell -> maybe any state is valid, if spells are expensive and we don't want
