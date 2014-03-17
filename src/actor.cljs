@@ -26,10 +26,11 @@ tracer
 
 (defn get-next-frame
   "Calculate the next frame to draw based on the amount of time that has passed since the start of the animation.
-   frames is a seq of durations.
 
+  - frames is a seq of durations.
   - elapsed is the time since the last simulation update.
-  - Returns a mapping:
+
+  Returns a mapping:
     :elapsed -> new time since start of animation loop
     :frame -> frame index to draw right now."
   [frames elapsed]
@@ -40,6 +41,22 @@ tracer
                        (recur frames (+ frames-elapsed (frames i)) (+ i 1))))]
     {:elapsed new-elapsed
      :frame (find-frame frames 0 0)}))
+
+
+(defn get-next-regular-frame
+  "Calculate the next frame to draw based on the amount of time that has passed since the start of the animation, assuming consistent frame duration.
+
+  - num-frames is the number of frames in the loop
+  - frame-length is the duration of each frame.
+  - elapsed is the time since the last simulation update.
+
+  Returns a mapping:
+    :elapsed -> new time since start of animation loop
+    :frame -> frame index to draw right now."
+  [num-frames frame-length elapsed]
+  (let [new-elapsed (mod elapsed (* num-frames frame-length))]
+    {:elapsed new-elapsed
+     :frame (/ new-elapsed frame-length)}))
 
 ;TODO: Support non-looping animations, I think?
 (defn animation-step
@@ -90,8 +107,6 @@ tracer
     [:bad a]
     :good))
 
-(get-frames :rabite :breathing-left)
-
 (assert= (get-next-frame [2 2 2 2] 4)
          {:elapsed 4 :frame 2})
 (assert= (get-next-frame [1] 10)
@@ -106,7 +121,21 @@ tracer
          {:elapsed 20 :frame 2})
 (assert= (get-next-frame [10 10] 20)
          {:elapsed 0 :frame 0})
+(assert= (get-next-frame [1 2 4] 4)
+         {:elapsed 4 :frame 2})
+(assert= (get-next-frame [1 3 4] 4)
+         {:elapsed 4 :frame 2})
+(assert= (get-next-frame [2 2 3] 8)
+         {:elapsed 1 :frame 0})
 
+(assert= (get-next-regular-frame 4 20 60)
+         {:elapsed 60 :frame 3})
+(assert= (get-next-regular-frame 1 1 532)
+         {:elapsed 0 :frame 0})
+(assert= (get-next-regular-frame 2 1 3)
+         {:elapsed 1 :frame 1})
+(assert= (get-next-regular-frame 1 10 0)
+         {:elapsed 0 :frame 0})
 
 (assert= (animation-step (monster :animation) 0)
          {:sprite :rabite :frameset :breathing-left :frame 0 :elapsed 0})
@@ -120,6 +149,41 @@ tracer
          {:sprite :rabite :frameset :breathing-left :frame 1 :elapsed 19})
 (assert= (animation-step (monster :animation) 20)
          {:sprite :rabite :frameset :breathing-left :frame 0 :elapsed 0})
+
+
+#_"
+Walkin' around!
+
+The very lowest level:
+ - velocity on x and y (alternatively, represent it as one vector)
+ - animation state (:boy :walking-left)
+
+Up from that, we need the AI to have a state, such as:
+
+:idle -> :walking-left
+
+or
+
+:combat -> [:approaching <boy-id>] -> :walking-left
+
+
+ok, let's try top-down.
+
+be-aggressive could be a top-level goal for a monster.
+
+be-aggressive
+  near-enemy? attack-enemy
+  idle
+
+Another top-level goal (for a friendly villager) would be
+
+idle
+  random-step
+
+random-step
+  (duration 5 (walk (random)))
+"
+
 
 #_"
 Consider:
